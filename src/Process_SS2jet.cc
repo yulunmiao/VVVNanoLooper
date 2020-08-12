@@ -21,6 +21,21 @@ void Process_SS2jet(){
 
     //LorentzVector LV_SS2jet_LVVar1 = RooUtil::Calc::getLV(34.5, 1.2, 3.123, 0.105); // RooUtil::Calc::getLV() creates 4 vector
     //ana.tx.setBranch<LorentzVector>("SS2jet_LVVar1", LV_SS2jet_LVVar1);
+    //raw geninfo
+    
+    if(!nt.isData()){
+	for(unsigned int igen=0;igen<nt.GenPart_p4().size();igen++){
+		ana.tx.pushbackToBranch<int>		("SS2jet_raw_gen_idx", igen);                                                            // Selected gen-particle idx in NanoAOD
+		ana.tx.pushbackToBranch<int>		("SS2jet_raw_gen_mother_idx", nt.GenPart_genPartIdxMother()[igen]);                      // Selected gen-particle mother idx in NanoAOD
+		ana.tx.pushbackToBranch<int>		("SS2jet_raw_gen_mother_id",  nt.GenPart_pdgId()[nt.GenPart_genPartIdxMother()[igen] ]); // Selected gen-particle mother idx in NanoAOD
+		ana.tx.pushbackToBranch<int>		("SS2jet_raw_gen_pdgid", nt.GenPart_pdgId()[igen]);                                      // Selected gen-particle pdgids
+		ana.tx.pushbackToBranch<LorentzVector>	("SS2jet_raw_gen_p4s", nt.GenPart_p4()[igen]);                                           // Selected gen-particle
+		ana.tx.pushbackToBranch<int>	  	("SS2jet_raw_gen_status",nt.GenPart_status()[igen]);
+		ana.tx.pushbackToBranch<int>		("SS2jet_raw_gen_statusFlags",nt.GenPart_statusFlags()[igen]);
+	}
+    }
+    
+    //raw nanoinfo
     ana.tx.setBranch<int>       ("SS2jet_raw_nlep",nt.Muon_p4().size()+nt.Electron_p4().size());
     ana.tx.setBranch<int>	("SS2jet_raw_njet",nt.Jet_p4().size());
     ana.tx.setBranch<int>       ("SS2jet_raw_nfatjet",nt.FatJet_p4().size());
@@ -167,6 +182,7 @@ void Process_SS2jet(){
 	
 
 void PostProcess_SS2jet(){
+    //if (ana.cutflow.getCut("SS2jet_bVeto").pass){
     if (ana.cutflow.getCut("SS2jet_FatJetCut").pass){
                    ana.tx.fill(); 
     }

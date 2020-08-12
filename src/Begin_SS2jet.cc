@@ -14,6 +14,15 @@ void Begin_SS2jet()
     //ana.tx.createBranch<float>("SS2jet_floatVar1");
     //ana.tx.createBranch<LorentzVector>("SS2jet_LVVar1");
     
+    //raw gen info
+    ana.tx.createBranch<vector<int>>		("SS2jet_raw_gen_idx");        // Selected gen-particle idx in NanoAOD
+    ana.tx.createBranch<vector<int>>		("SS2jet_raw_gen_mother_idx"); // Selected gen-particle mother idx in NanoAOD
+    ana.tx.createBranch<vector<int>>		("SS2jet_raw_gen_mother_id");  // Selected gen-particle mother id in NanoAOD
+    ana.tx.createBranch<vector<int>>		("SS2jet_raw_gen_pdgid");      // Selected gen-particle pdgids
+    ana.tx.createBranch<vector<LorentzVector>>	("SS2jet_raw_gen_p4s");        // Selected gen-particle p4s 
+    ana.tx.createBranch<vector<int>>            ("SS2jet_raw_gen_status");
+    ana.tx.createBranch<vector<int>>            ("SS2jet_raw_gen_statusFlags");
+
     //raw NanoAOD info    
     ana.tx.createBranch<int>			("SS2jet_raw_nlep");
     ana.tx.createBranch<int>			("SS2jet_raw_njet");
@@ -67,8 +76,8 @@ void Begin_SS2jet()
     // CommonCut will contain selections that should be common to all categories, starting from this cut, add cuts for this category of the analysis.
     ana.cutflow.getCut("CommonCut");
     //ana.cutflow.addCutToLastActiveCut("Cut_SS2jet_Preselection", [&]() { return ana.tx.getBranch<LorentzVector>("SS2jet_LVVar1").pt() > 25.;}, [&]() { return ana.tx.getBranch<float>("SS2jet_floatVar1"); } );
+/*
     //This cut is to get the event with WWW->SS+1FatJet at genlevel
-    
     ana.cutflow.addCutToLastActiveCut("SS2jet_GenSS1FatJet",
 					[&](){
 					int nboost=0;
@@ -94,6 +103,7 @@ void Begin_SS2jet()
 					}
 					return false;
 					},UNITY);
+*/  
     // This preselction cut is to get the events with no less than 2 leptons and 1 fatjet
     ana.cutflow.addCutToLastActiveCut("SS2jet_Preselection",
 					[&](){
@@ -113,10 +123,10 @@ void Begin_SS2jet()
 					return false;
 					},UNITY);
     //This cut is to get the events with no b-tagged jet
-    ana.cutflow.addCutToLastActiveCut("SS2jet_bVeto",
+    ana.cutflow.addCutToLastActiveCut("SS2jet_bCut",
 					[&](){
 					int		nb=	ana.tx.getBranchLazy<int	>("SS2jet_nb_medium");
-					if(nb==0) return true;
+					if(nb!=0) return true;
 					return false;
 					},UNITY);
     //This cut is to get the events with 1 fat jet
@@ -140,6 +150,5 @@ void Begin_SS2jet()
 
     // Book histograms to cuts that user wants for this category.
     //ana.cutflow.bookHistogramsForCut(hists_SS2jet, "Cut_SS2jet_Preselection");
-    ana.cutflow.bookHistogramsForCutAndBelow(ana.histograms, "SS2jet_GenSS1FatJet");
 
 }
