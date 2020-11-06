@@ -38,9 +38,12 @@ if __name__ == "__main__":
     parser.add_argument('-y' , '--year'        , dest='year'      , help='data year'                 , type=int, required=True                                     )
     parser.add_argument('-t' , '--thetag'      , dest='thetag'    , help='tag'                       , type=str,                default="test"                     )
     parser.add_argument('-s' , '--mysample'    , dest='mysample'  , help='don\'t do autmoated sample',                          default=False , action='store_true')
+    parser.add_argument('-r' , '--region'      , dest='region'    , help='region of the job'         , type=int, 		default=0                          )
+
     # Argument parser
     args = parser.parse_args()
     args.mode
+    args.region
     
     # Specify a dataset name and a short name for the output root file on nfs
     sample_map = samples.mc_2018 # See condor/samples.py
@@ -55,11 +58,7 @@ if __name__ == "__main__":
         elif args.year==2016:
             sample_map = samples.data_2016 # See condor/samples.py
     if args.mysample:
-        sample_map = samples.samples_VVV4L_2018 # See condor/samples.py
-        if args.year==2017:
-            sample_map = samples.samples_VVV4L_2017 # See condor/samples.py
-        elif args.year==2016:
-            sample_map = samples.samples_VVV4L_2016 # See condor/samples.py
+        sample_map = samples.samples_VVV4L_2016 # See condor/samples.py
         
 
     # submission tag
@@ -93,7 +92,8 @@ if __name__ == "__main__":
                         "sites": "T2_US_UCSD,UAF",
                         "use_xrootd":True,
                         "classads": [
-                            ["metis_extraargs", "--mode {} {}".format(args.mode,args.addflags)]
+                            ["metis_extraargs_mode", "--mode {} {}".format(args.mode,args.addflags)],
+                            ["metis_extraargs_region", "--region {} {}".format(args.region,args.addflags)]
                             ]
                         },
                     cmssw_version = "CMSSW_9_2_0",

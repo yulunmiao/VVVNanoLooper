@@ -17,18 +17,26 @@ bool SS2jet_SR(){
     ana.cutflow.addCutToLastActiveCut("SS2jet_LeptonCut",
 					[&](){
 					vector<int>	pdgid=	ana.tx.getBranchLazy<vector<int>	>("SS2jet_lep_pdgid");
-					int 		nloose=	ana.tx.getBranchLazy<int		>("SS2jet_nloose");
-
-					if(nloose==2 && pdgid.size()==2 && pdgid.at(0)*pdgid.at(1)>0) return true;
+					vector<bool> 	tight=	ana.tx.getBranchLazy<vector<bool>	>("SS2jet_lep_tight");
+					int ntight=0,samesign=1;
+					for(unsigned int ilep=0;ilep<pdgid.size();ilep++){
+						if(tight.at(ilep)){
+							ntight++;
+							samesign*=pdgid.at(ilep);
+						}
+					}
+					if(ntight==2 && samesign>0) return true;
 					return false;
 					},UNITY);
+    /*
     //This cut is to get the events with no b-tagged jet
     ana.cutflow.addCutToLastActiveCut("SS2jet_bCut",
 					[&](){
-					int		nb=	ana.tx.getBranchLazy<int	>("SS2jet_nb_medium");
+					int		nb=	ana.tx.getBranchLazy<int	>("SS2jet_nb_loose");
 					if(nb==0) return true;
 					return false;
 					},UNITY);
+    */
     //This cut is to get the events with 1 fat jet
     ana.cutflow.addCutToLastActiveCut("SS2jet_FatJetCut",
 					[&](){
@@ -53,11 +61,17 @@ bool SS2jet_CR_ttbar(){
     // This preselction cut is to get the events with no less than 2 leptons and 1 fatjet
     ana.cutflow.addCutToLastActiveCut("SS2jet_Preselection",
 					[&](){
-					int nlep=nt.Muon_p4().size()+nt.Electron_p4().size();
-					int nfatjet=nt.FatJet_p4().size();
-
-					if(nlep>=2 && nfatjet>=1) return true;
-					return false;
+                                        vector<int>     pdgid=  ana.tx.getBranchLazy<vector<int>        >("SS2jet_lep_pdgid");
+                                        vector<bool>    tight=  ana.tx.getBranchLazy<vector<bool>       >("SS2jet_lep_tight");
+                                        int ntight=0,samesign=1;
+                                        for(unsigned int ilep=0;ilep<pdgid.size();ilep++){
+                                                if(tight.at(ilep)){
+                                                        ntight++;
+                                                        samesign*=pdgid.at(ilep);
+                                                }
+                                        }
+                                        if(ntight==2 && samesign>0) return true;
+                                        return false;
 					},UNITY);
     //This cut is to get the events with exact two same sign isolated leptons with pt>25.
     ana.cutflow.addCutToLastActiveCut("SS2jet_LeptonCut",
@@ -68,14 +82,16 @@ bool SS2jet_CR_ttbar(){
 					if(nloose==2 && pdgid.size()==2 && pdgid.at(0)*pdgid.at(1)>0) return true;
 					return false;
 					},UNITY);
-    //This cut is to get the events with at least 1 b-tagged jet
+/*
+    //This cut is to get the events with exactly 1 b-tagged jet
     ana.cutflow.addCutToLastActiveCut("SS2jet_bCut",
 					[&](){
-					int		nb=	ana.tx.getBranchLazy<int	>("SS2jet_nb_medium");
+					int		nb=	ana.tx.getBranchLazy<int	>("SS2jet_nb_loose");
 					if(nb!=0) return true;
 					return false;
 					},UNITY);
     //This cut is to get the events with at least 1 fat jet
+*/  
     ana.cutflow.addCutToLastActiveCut("SS2jet_FatJetCut",
 					[&](){
 					vector<int>     idx=  ana.tx.getBranchLazy<vector<int>        >("SS2jet_fatjet_idx");	
@@ -84,7 +100,90 @@ bool SS2jet_CR_ttbar(){
 					},UNITY);
     return true;
 }
- 
+
+bool SS2jet_SR_POG(){
+    cout<<"The signal region with POG ID for SS2jet channel"<<endl;
+    // CommonCut will contain selections that should be common to all categories, starting from this cut, add cuts for this category of the analysis.
+    ana.cutflow.getCut("CommonCut");
+    //ana.cutflow.addCutToLastActiveCut("Cut_SS2jet_Preselection", [&]() { return ana.tx.getBranch<LorentzVector>("SS2jet_LVVar1").pt() > 25.;}, [&]() { return ana.tx.getBranch<float>("SS2jet_floatVar1"); } );
+    // This preselction cut is to get the events with no less than 2 leptons and 1 fatjet
+    ana.cutflow.addCutToLastActiveCut("SS2jet_Preselection",
+					[&](){
+					int nlep=nt.Muon_p4().size()+nt.Electron_p4().size();
+					int nfatjet=nt.FatJet_p4().size();
+
+					if(nlep>=2 && nfatjet>=1) return true;
+					return false;
+					},UNITY);
+    //This cut is to get the events with exact two same sign isolated leptons with pt>25.
+    ana.cutflow.addCutToLastActiveCut("SS2jet_LeptonCut",
+					[&](){
+					vector<int>	pdgid=	ana.tx.getBranchLazy<vector<int>	>("Common_lep_pdgid");
+					vector<int>	tight=	ana.tx.getBranchLazy<vector<int>	>("Common_lep_tight");
+					if(pdgid.size()==2 && pdgid.at(0)*pdgid.at(1)>0 && tight.at(0)==1 && tight.at(1)==1 ) return true;
+					return false;
+					},UNITY);
+    /*
+    //This cut is to get the events with no b-tagged jet
+    ana.cutflow.addCutToLastActiveCut("SS2jet_bCut",
+					[&](){
+					int		nb=	ana.tx.getBranchLazy<int	>("SS2jet_nb_loose");
+					if(nb==0) return true;
+					return false;
+					},UNITY);
+    */
+    //This cut is to get the events with 1 fat jet
+    ana.cutflow.addCutToLastActiveCut("SS2jet_FatJetCut",
+					[&](){
+					vector<int>     idx=  ana.tx.getBranchLazy<vector<int>        >("Common_fatjet_idxs");	
+					if(idx.size()==1) return true;
+					return false;
+					},UNITY);
+    return true;
+}
+
+bool SS2jet_CR_ttbar_POG(){
+    cout<<"The ttbar control region for SS2jet channel"<<endl;
+    // CommonCut will contain selections that should be common to all categories, starting from this cut, add cuts for this category of the analysis.
+    ana.cutflow.getCut("CommonCut");
+    //ana.cutflow.addCutToLastActiveCut("Cut_SS2jet_Preselection", [&]() { return ana.tx.getBranch<LorentzVector>("SS2jet_LVVar1").pt() > 25.;}, [&]() { return ana.tx.getBranch<float>("SS2jet_floatVar1"); } );
+    // This preselction cut is to get the events with no less than 2 leptons and 1 fatjet
+    ana.cutflow.addCutToLastActiveCut("SS2jet_Preselection",
+					[&](){
+					int nlep=nt.Muon_p4().size()+nt.Electron_p4().size();
+					int nfatjet=nt.FatJet_p4().size();
+
+					if(nlep>=2 && nfatjet>=1) return true;
+					return false;
+					},UNITY);
+    //This cut is to get the events with exact two same sign isolated leptons with pt>25.
+    ana.cutflow.addCutToLastActiveCut("SS2jet_LeptonCut",
+                                        [&](){
+                                        vector<int>     pdgid=  ana.tx.getBranchLazy<vector<int>        >("Common_lep_pdgid");
+                                        vector<int>     tight=  ana.tx.getBranchLazy<vector<int>        >("Common_lep_tight");
+                                        if(pdgid.size()==2 && pdgid.at(0)*pdgid.at(1)>0 && tight.at(0)==1 && tight.at(1)==1 ) return true;
+                                        return false;
+                                        },UNITY);
+
+    /*
+    //This cut is to get the events with at least 1 b-tagged jet
+    ana.cutflow.addCutToLastActiveCut("SS2jet_bCut",
+					[&](){
+					int		nb=	ana.tx.getBranchLazy<int	>("SS2jet_nb_loose");
+					if(nb!=0) return true;
+					return false;
+					},UNITY);
+    */
+    //This cut is to get the events with exactly 1 fat jet
+    ana.cutflow.addCutToLastActiveCut("SS2jet_FatJetCut",
+                                        [&](){
+                                        vector<int>     idx=  ana.tx.getBranchLazy<vector<int>        >("Common_fatjet_idxs");
+                                        if(idx.size()==1) return true;
+                                        return false;
+                                        },UNITY);
+    return true;
+}
+
 void Begin_SS2jet()
 {
     //==============================================
@@ -107,6 +206,10 @@ void Begin_SS2jet()
     ana.tx.createBranch<vector<LorentzVector>>	("SS2jet_raw_gen_p4s");        // Selected gen-particle p4s 
     ana.tx.createBranch<vector<int>>            ("SS2jet_raw_gen_status");
     ana.tx.createBranch<vector<int>>            ("SS2jet_raw_gen_statusFlags");
+    ana.tx.createBranch<vector<LorentzVector>>  ("SS2jet_raw_genjet_p4");
+    ana.tx.createBranch<vector<int>>            ("SS2jet_raw_genjet_partonFlavour");
+
+
 
     //raw NanoAOD info    
     ana.tx.createBranch<int>			("SS2jet_raw_nlep");
@@ -115,10 +218,10 @@ void Begin_SS2jet()
     //iso track info
     ana.tx.createBranch<int>			("SS2jet_nIsoTrack");	//number of isotrack    
     //lep info for SS1FatJet
-    ana.tx.createBranch<int>		 	("SS2jet_nloose");	// number of loose leptons  
     ana.tx.createBranch<vector<LorentzVector>>	("SS2jet_lep_p4");      // Pt sorted selected lepton p4s (electrons and muons together)
     ana.tx.createBranch<vector<int>>          	("SS2jet_lep_idx");     // Pt sorted selected lepton idx (electrons and muons together)
     ana.tx.createBranch<vector<int>>          	("SS2jet_lep_pdgid");   // Pt sorted selected lepton pdgids (electrons and muons together)
+    ana.tx.createBranch<vector<bool>>		("SS2jet_lep_tight");	// Pt sorted selected lepton tight Info
     //b-tagging info
     ana.tx.createBranch<int>			("SS2jet_nb_loose");
     ana.tx.createBranch<int>			("SS2jet_nb_medium");
@@ -127,9 +230,11 @@ void Begin_SS2jet()
     //jet info for SS1FatJet
     ana.tx.createBranch<vector<LorentzVector>>	("SS2jet_jet_p4");            // Pt sorted selected jet p4s
     ana.tx.createBranch<vector<int>>		("SS2jet_jet_idx");           // Pt sorted selected jet idx (To access rest of the jet variables in NanoAOD)
+    ana.tx.createBranch<vector<bool>>		("SS2jet_jet_overlaplep");    // Pt sorted selected jet overlap info with respect to lep
     ana.tx.createBranch<vector<bool>>		("SS2jet_jet_passBloose");    // Pt sorted boolean value jet pass loose b-tagging
     ana.tx.createBranch<vector<bool>>		("SS2jet_jet_passBmedium");   // Pt sorted boolean value jet pass medium b-tagging
     ana.tx.createBranch<vector<bool>>		("SS2jet_jet_passBtight");    // Pt sorted boolean value jet pass medium b-tagging
+    ana.tx.createBranch<vector<int>>		("SS2jet_jet_genJetIdx");
     //fatjet info for SS1FatJet
     ana.tx.createBranch<vector<LorentzVector>>	("SS2jet_fatjet_p4");            // Pt sorted selected fatjet p4s
     ana.tx.createBranch<vector<int>>          	("SS2jet_fatjet_idx");           // Pt sorted selected fatjet idx (To access rest of the fatjet variables in NanoAOD)
@@ -163,6 +268,8 @@ void Begin_SS2jet()
 	case 0:status=SS2jet_SR();break;
 	case 1:status=SS2jet_CR_WZ();break;
 	case 2:status=SS2jet_CR_ttbar();break;
+	case 10:status=SS2jet_SR_POG();break;
+	case 12:status=SS2jet_CR_ttbar_POG();break;
     }
     if(!status){
 	std::cout<<"ERROR:This region is not set yet"<<endl;
