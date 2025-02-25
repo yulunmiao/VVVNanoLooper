@@ -1112,7 +1112,19 @@ void Begin_Common_NanoAOD()
 
     // Various book keeping variables are included here.
     // TODO: Define some diagnostic basic plots
-
+    ana.cutflow.addCut("WeightFilter", [&](){
+        if(ana.is_EFT_sample){
+            vector<float> EFTWeights= ana.tx.getBranchLazy<vector<float>>("Common_LHEWeight_mg_reweighting");
+            if(ana.input_file_list_tstring.Contains("dim6") && EFTWeights.size()!=217) return false;
+            else if(ana.input_file_list_tstring.Contains("dim8")){
+                if(ana.input_file_list_tstring.Contains("WWW") && EFTWeights.size()!=145) return false;
+                else if(ana.input_file_list_tstring.Contains("WWZ") && EFTWeights.size()!=229) return false;
+                else if(ana.input_file_list_tstring.Contains("WZZ") && EFTWeights.size()!=229) return false;
+                else if(ana.input_file_list_tstring.Contains("ZZZ") && EFTWeights.size()!=253) return false;
+            }
+        }
+        return true;
+    }, UNITY);
     Begin_Common_Book_NEvent_Histograms();
 
     // Create histograms used in this category.
@@ -1143,7 +1155,7 @@ void Begin_Common_NanoAOD()
 
     // Book the EFT reweighting histogram counter
     ana.cutflow.bookHistogramsForCut(n_lhe_weight, "Root");
-
+    ana.cutflow.bookHistogramsForCut(n_lhe_weight, "WeightFilter");
 }
 
 void Begin_Common_Book_NEvent_Histograms()
